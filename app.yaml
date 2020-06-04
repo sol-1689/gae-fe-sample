@@ -1,0 +1,53 @@
+# 設定方法
+# https://cloud.google.com/appengine/docs/flexible/custom-runtimes/configuring-your-app-with-app-yaml?hl=ja
+runtime: custom
+env: flex
+
+# サービス名で領域が分けられる。省略するとdefaultというサービス名でデプロイされる。
+service: gaesample
+
+
+# 手動スケーリングにして、インスタンス数を固定する。
+# インスタンスは1つの想定。複数にする場合、sessionのredis管理などが必要になるので注意。
+manual_scaling:
+    instances: 1
+
+# 自動スケーリングする場合
+# automatic_scaling:
+#     min_num_instances: 1
+#     max_num_instances: 3
+#     cool_down_period_sec: 180
+#     cpu_utilization:
+#       target_utilization: 0.6
+
+# CPU・メモリなどのリソースの設定
+resources:
+    cpu: 1
+    memory_gb: 4
+    disk_size_gb: 20
+    # volumes:
+    # - name: ramdisk1
+    #   volume_type: tmpfs
+    #   size_gb: 0.5
+
+# ヘルスチェック。コンテナが実行中かどうかを確認する。異常と見なされたインスタンスは再起動される。
+liveness_check:
+    path: "/health"
+    check_interval_sec: 30
+    timeout_sec: 4
+    failure_threshold: 2
+    success_threshold: 2
+
+# コンテナ内の環境変数を設定
+env_variables:
+    # この値により読み込むappsettings.jsonが変わる。(appsettings.{環境変数の値}.json)
+    ASPNETCORE_ENVIRONMENT: "Production"
+
+
+# 不要なファイルをコンテナ内にコピーしないよう設定する場合
+skip_files:
+    # 本番用を除外
+    - ^(.*/)?Deploy/Production/(.*)
+    # 実働環境用以外を除外
+    - ^(.*/)?Deploy/Test/開発用/(.*)
+
